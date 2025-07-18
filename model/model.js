@@ -27,7 +27,7 @@ const workerSchema = new Schema({
     phone: { type: String, required: true },
     proffession: { type: String, required: true },
     nationalId: { type: String, required: true, unique: true },
-    referee: { type: String, required: true },
+
     experience: { type: String },
     address: { type: String }
 }, { timestamps: true });
@@ -69,7 +69,6 @@ const ServiceSchema = new Schema({
   timestamps: true,
 });
 
-module.exports = mongoose.model('Service', ServiceSchema);
 
 // booking schema
 const BookingSchema = new Schema({
@@ -134,9 +133,9 @@ const MessageSchema = new Schema({
     type: Boolean,
     default: false,
   },
-}, {
-  timestamps: true,
-});
+  time:{ type: Date, default: Date.now }
+
+}, );
 
 
 // admin action schema
@@ -189,6 +188,11 @@ const PaymentSchema = new Schema({
     type: Number,
     required: true,
     min: [0, 'Fee cannot be negative'],
+  },
+  method: {
+    type: String,
+    enum: ['card', 'mpesa', 'paypal'],
+    required: true,
   },
   status: {
     type: String,
@@ -243,6 +247,7 @@ const CategorySchema = new Schema({
   description: {
     type: String,
   },
+  service:[{type: Schema.Types.ObjectId, ref: 'Service'}]
 }, {
   timestamps: true,
 });

@@ -1,0 +1,1 @@
+const {Payment, User, Client, Worker, Service, Booking} = require('../model/model');
