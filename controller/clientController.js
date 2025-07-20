@@ -1,12 +1,27 @@
-const { Client } = require('../model/model');
+const { Client, User } = require('../model/model');
 
 // Create a new client
 exports.createClient = async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
+    const { name, email, phone, address,password, role } = req.body;
+    const userEmail= `${role}.${email}`
+    const existingUser= await User.findOne(userEmail)
+    if (existingUser){
+      return res.status(400).json( {message:"User already exists"})
+    }
+    const existClient= await Client.findOne(email)
+    if (existClient){
+      return res.status(400).json({message:"Client already exists"})
+    }
     const client = new Client({ name, email, phone, address });
     await client.save();
+
+    // hash password
+    const hashedPassword= await bcrypt.hash(password,12)
+    const user= new User({name,email,password:hashedPassword})
+    await user.save()
     res.status(201).json(client);
+
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -54,4 +69,4 @@ exports.deleteClient = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
+}; 
