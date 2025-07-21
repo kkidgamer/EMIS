@@ -1,15 +1,17 @@
 const { Client, User } = require('../model/model');
+const bcrypt = require('bcrypt');
 
 // Create a new client
 exports.createClient = async (req, res) => {
   try {
     const { name, email, phone, address,password, role } = req.body;
-    const userEmail= `${role}.${email}`
-    const existingUser= await User.findOne(userEmail)
+    console.log(role)
+    const userEmail= `${role.toLowerCase().trim()}.${email.toLowerCase().trim()}`
+    const existingUser= await User.findOne({email:userEmail})
     if (existingUser){
       return res.status(400).json( {message:"User already exists"})
     }
-    const existClient= await Client.findOne(email)
+    const existClient= await Client.findOne({email})
     if (existClient){
       return res.status(400).json({message:"Client already exists"})
     }
@@ -18,7 +20,7 @@ exports.createClient = async (req, res) => {
 
     // hash password
     const hashedPassword= await bcrypt.hash(password,12)
-    const user= new User({name,email,password:hashedPassword})
+    const user= new User({name,email:userEmail,password:hashedPassword,role,client:client._id})
     await user.save()
     res.status(201).json(client);
 
@@ -55,6 +57,13 @@ exports.updateClient = async (req, res) => {
     const client = await Client.findByIdAndUpdate(req.params.id, updates, { new: true });
     if (!client) return res.status(404).json({ error: 'Client not found' });
     res.json(client);
+    // update corresponding user
+    const user = await User.findOneAndUpdate(
+      { client: req.params.id },
+      { name: updates.name, email: updates.email },
+      { new: true }
+    );
+    
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -66,7 +75,14 @@ exports.deleteClient = async (req, res) => {
     const client = await Client.findByIdAndDelete(req.params.id);
     if (!client) return res.status(404).json({ error: 'Client not found' });
     res.json({ message: 'Client deleted' });
+    // delete corresponding user
+    const deleteUser = await User.findOneAndDelete({ client: req.params.id });
+    if (!deleteUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: 'User deleted' });
+    
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 }; 

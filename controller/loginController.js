@@ -7,7 +7,7 @@ exports.registerAdmin = async (req, res) => {
     const {name, email, password, secretKey, role} = req.body
 
     const prefix = `${role}.`; 
-    const prefixedEmail = `${prefix}${email.trim()}`
+    const prefixedEmail = `${prefix}${email.trim().toLowerCase()}`
     try {
         // Check if the secret key matches
         if (secretKey !== process.env.secretKey) {
@@ -15,7 +15,7 @@ exports.registerAdmin = async (req, res) => {
         }
 
         // Check if user already exists
-        const existingUser = await User.findOne({prefixedEmail})
+        const existingUser = await User.findOne({email:prefixedEmail})
         if (existingUser) {
             return res.status(400).json({message: 'User already exists'})
         }
@@ -38,7 +38,7 @@ exports.registerAdmin = async (req, res) => {
         
         res.status(201).json({message: 'Admin registered successfully',newUser})
     } catch (error) {
-        console.error('Error registering admin:', error)
+
         res.status(500).json({message: 'Internal server error'})
     }
 }
@@ -135,6 +135,22 @@ exports.updateUser = async (req, res) => {
     }
     catch (error) {
         
+        res.status(500).json({message: error.message})
+    }
+}
+exports.deactivateUser = async (req, res) => {
+    const {id} = req.params
+    try {
+        // Find user by ID
+        const user = await User.findById(id)
+        if (!user) {
+            return res.status(404).json({message: 'User not found'})
+        }
+        // Deactivate user
+        user.isActive = false
+        await user.save()
+        res.status(200).json({message: 'User deactivated successfully', user})
+    } catch (error) {
         res.status(500).json({message: error.message})
     }
 }
