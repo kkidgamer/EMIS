@@ -163,48 +163,64 @@ const AdminActionSchema = new Schema({
 });
 
 // payment schema
+// const PaymentSchema = new Schema({
+//   bookingId: {
+//     type: Schema.Types.ObjectId,
+//     ref: 'Booking',
+//     required: true,
+//   },
+//   clientId: {
+//     type: Schema.Types.ObjectId,
+//     ref: 'User',
+//     required: true,
+//   },
+//   workerId: {
+//     type: Schema.Types.ObjectId,
+//     ref: 'User',
+//     required: true,
+//   },
+//   amount: {
+//     type: Number,
+//     required: true,
+//     min: [0, 'Amount cannot be negative'],
+//   },
+//   platformFee: {
+//     type: Number,
+//     required: true,
+//     min: [0, 'Fee cannot be negative'],
+//   },
+//   method: {
+//     type: String,
+//     enum: ['card', 'mpesa', 'paypal'],
+//     required: true,
+//   },
+//   status: {
+//     type: String,
+//     enum: ['pending', 'held', 'released', 'refunded'],
+//     default: 'pending',
+//   },
+//   transactionId: {
+//     type: String, // From payment gateway
+//   },
+// },
+// {
+//   timestamps: true,
+// });
+
+
 const PaymentSchema = new Schema({
-  bookingId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Booking',
-    required: true,
-  },
-  clientId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  workerId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  amount: {
-    type: Number,
-    required: true,
-    min: [0, 'Amount cannot be negative'],
-  },
-  platformFee: {
-    type: Number,
-    required: true,
-    min: [0, 'Fee cannot be negative'],
-  },
-  method: {
-    type: String,
-    enum: ['card', 'mpesa', 'paypal'],
-    required: true,
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'held', 'released', 'refunded'],
-    default: 'pending',
-  },
-  transactionId: {
-    type: String, // From payment gateway
-  },
-}, {
-  timestamps: true,
-});
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
+  amount: { type: Number, required: true },
+  status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
+  mpesaReceiptNumber: { type: String },
+  phoneNumber: { type: String },
+  transactionDate: { type: Date },
+  merchantRequestID: { type: String },
+  checkoutRequestID: { type: String },
+  errorMessage: { type: String },
+}, { timestamps: true });
+
 
 // review schema
 const ReviewSchema = new Schema({
