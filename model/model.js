@@ -25,7 +25,7 @@ const workerSchema = new Schema({
     name: { type: String, required: true },
     email: { type: String },
     phone: { type: String, required: true },
-    proffession: { type: String, required: true },
+    profession: { type: String, required: true },
     nationalId: { type: String, required: true, unique: true },
 
     experience: { type: String },

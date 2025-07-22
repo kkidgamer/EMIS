@@ -1,6 +1,6 @@
 
-const { Worker } = require('../model/model');
-
+const { Worker, User } = require('../model/model');
+const bcrypt = require('bcrypt');
 // Create a new worker
 exports.createWorker = async (req, res) => {
   try {
@@ -14,7 +14,11 @@ exports.createWorker = async (req, res) => {
     if (existingWorker) {
       return res.status(400).json({ message: "Worker already exists" });
     }
-    const worker = new Worker({ name, email, phone, profession, nationalId, experience, address });
+    const existingNationalId = await Worker.findOne({ nationalId });
+    if (existingNationalId) {
+      return res.status(400).json({ message: "National ID already exists" });
+    }
+        const worker = new Worker({ name, email, phone, profession, nationalId, experience, address });
     await worker.save();
     
     // hash password
@@ -22,6 +26,7 @@ exports.createWorker = async (req, res) => {
     // Create a new user associated with the worker
     const user = new User({ name, email: userEmail, password: hashedPassword, role, worker: worker._id });
     await user.save();
+
 
     res.status(201).json(worker);
   } catch (error) {
@@ -54,6 +59,11 @@ exports.getWorkerById = async (req, res) => {
 exports.updateWorker = async (req, res) => {
   try {
     const updates = req.body;
+
+
+    // Ensure that the user if is a worker can only update their own information and must be logged in
+     
+    
     const worker = await Worker.findByIdAndUpdate(req.params.id, updates, { new: true });
     if (!worker) return res.status(404).json({ error: 'Worker not found' });
     res.json(worker);

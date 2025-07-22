@@ -46,10 +46,12 @@ exports.registerAdmin = async (req, res) => {
 
 // login user logic
 exports.loginAdmin = async (req, res) => {
-    const {email, password} = req.body
+    const {email, password,role} = req.body
     try {
         // Find user by email
-        const user = await User.findOne({email})
+        const prefix = `${role}.`; 
+         const prefixedEmail = `${prefix.trim().toLowerCase()}${email.trim().toLowerCase()}`
+        const user = await User.findOne({email: prefixedEmail})
         if (!user) {
             return res.status(404).json({message: 'Invalid Credentials... Please try again'})
         }
@@ -60,7 +62,7 @@ exports.loginAdmin = async (req, res) => {
         // Check if the password is correct
         const isPasswordValid = await bcrypt.compare(password, user.password)
         if (!isPasswordValid) {
-            return res.status(401).json({message: 'Invalid Credentials... Please try again'})
+            return res.status(401).json({message: 'Invalids Credentials... Please try again'})
         }
 
         // Generate JWT token
