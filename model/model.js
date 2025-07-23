@@ -36,7 +36,7 @@ const workerSchema = new Schema({
 const ServiceSchema = new Schema({
   workerId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Worker',
     required: true,
   },
   title: {
@@ -48,7 +48,7 @@ const ServiceSchema = new Schema({
     type: String,
   },
   category: {
-    type: String,
+    type: String,enum: ['plumbing', 'electrical','cooking', 'cleaning', 'carpentry', 'other'],
     required: true,
   },
   price: {
@@ -62,8 +62,8 @@ const ServiceSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['draft', 'active', 'inactive'],
-    default: 'draft',
+    enum: [ 'active', 'inactive'],
+    default: 'inactive',
   },
 }, {
   timestamps: true,

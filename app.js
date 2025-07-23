@@ -26,6 +26,14 @@ app.use('/api/client', clientRoute);
 const workerRoute = require('./routes/workerRoute');
 app.use('/api/worker', workerRoute);
 
+// service routes
+const serviceRoute = require ('./routes/serviceRoute')
+app.use('/api/service',serviceRoute)
+
+// booking routes
+const bookingRoute = require ('./routes/bookingRoute')
+app.use('/api/booking', bookingRoute)
+
 // connect to the database
 mongoose.connect(process.env.MONGO_URI)
 .then(()=> console.log('Connected to MongoDB'))
