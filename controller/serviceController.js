@@ -39,6 +39,19 @@ exports.getAllServices = async (req, res) => {
   }
 };
 // Get services by worker ID
+exports.getServicesByWorker = async (req, res) => {
+  try {
+    const user =  await User.findById(req.user.userId);
+    if (!user || user.role !== 'worker') {
+      return res.status(403).json({ message: 'Only workers can view their services' });
+    }
+    const services = await Service.find({ workerId:user.worker }).populate('workerId', 'name email');
+    if (!services.length) return res.status(404).json({ error: 'No services found for this worker' });
+    res.status(200).json(services);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
 // Get service by ID
