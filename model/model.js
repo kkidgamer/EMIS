@@ -28,9 +28,12 @@ const workerSchema = new Schema({
     phone: { type: String, required: true },
     profession: { type: String, required: true },
     nationalId: { type: String, required: true, unique: true },
-
     experience: { type: String },
-    address: { type: String }
+    address: { type: String },
+    rating: { type: Number, default: 0 },
+    subscriptionStatus: { type: String, enum: ['active', 'inactive'], default: 'inactive' },
+    subscriptionStartDate: { type: Date },
+    subscriptionEndDate: { type: Date }
 }, { timestamps: true });
 
 // service schema
@@ -91,6 +94,7 @@ const BookingSchema = new Schema({
   startTime: {
     type: Date,
     required: true,
+  
   },
   endTime: {
     type: Date,

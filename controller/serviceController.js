@@ -3,7 +3,7 @@ const { Service, User, Worker } = require('../model/model');
 // Create a new service
 exports.createService = async (req, res) => {
   try {
-    const { title, description, category, price, duration,status } = req.body;
+    const { title, description, category, price, duration } = req.body;
     const userId = req.user.userId; // From JWT middleware
 
     // Verify user is a worker
@@ -19,7 +19,7 @@ exports.createService = async (req, res) => {
       category,
       price,
       duration,
-      status
+      status:"active"
     });
 
     await service.save();
@@ -70,12 +70,16 @@ exports.updateService = async (req, res) => {
   try {
     const workerId = req.user.userId; // From JWT
     const updates = req.body;
+    const worker = await User.findById(workerId);
+    if (!worker || worker.role !== 'worker') {
+      return res.status(403).json({ message: 'Only workers can update services' });
+    }
 
     const service = await Service.findById(req.params.id);
     if (!service) return res.status(404).json({ error: 'Service not found' });
 
     // Ensure only the worker who created the service can update it
-    if (service.workerId.toString() !== workerId) {
+    if (service.workerId.toString() !== worker.worker.toString()) {
       return res.status(403).json({ message: 'Unauthorized to update this service' });
     }
 
@@ -114,3 +118,4 @@ exports.deleteService = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+

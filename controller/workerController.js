@@ -34,6 +34,7 @@ exports.createWorker = async (req, res) => {
   }
 };
 
+
 // Get all workers
 exports.getAllWorkers = async (req, res) => {
   try {
@@ -80,5 +81,97 @@ exports.deleteWorker = async (req, res) => {
     res.json({ message: 'Worker deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+
+// Mock payment function to simulate payment processing
+const simulatePayment = async (workerId, amount) => {
+  try {
+    // Simulate payment processing (e.g., calling Stripe API)
+    // In a real system, this would interact with a payment gateway
+    const paymentSuccessful = Math.random() > 0.1; // 90% chance of success for simulation
+    if (!paymentSuccessful) {
+      throw new Error('Payment failed');
+    }
+    return {
+      status: 'success',
+      transactionId: `txn_${Math.random().toString(36).substr(2, 9)}`,
+      amount,
+      workerId,
+      timestamp: new Date()
+    };
+  } catch (error) {
+    return {
+      status: 'failed',
+      error: error.message,
+      workerId,
+      timestamp: new Date()
+    };
+  }
+};
+
+
+// update worker subscription status
+// Manage subscription (handles payment-based activation and status checking)
+exports.manageSubscription = async (req, res) => {
+  try {
+    const currentDate = new Date();
+    const {paymentAmount} = req.body
+
+    // If req is provided (API call to process payment and activate subscription)
+    if (req && res) {
+      const workerId = req.params.id;
+      const worker = await Worker.findById(workerId);
+      if (!worker) return res.status(404).json({ error: 'Worker not found' });
+
+      // // Check if user is authenticated and authorized
+      // if (!req.user || req.user.userId.toString() !== workerId) {
+      //   return res.status(403).json({ error: 'Unauthorized: You can only manage your own subscription' });
+      // }
+
+      // Simulate payment (e.g., $20 for monthly subscription)
+       // Adjust as needed
+      const paymentResult = await simulatePayment(workerId, paymentAmount);
+
+      if (paymentResult.status === 'success') {
+        const startDate = new Date();
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 30); // Set subscription for 1 month
+
+        worker.subscriptionStatus = 'active';
+        worker.subscriptionStartDate = startDate;
+        worker.subscriptionEndDate = endDate;
+
+        await worker.save();
+        return res.json({
+          message: 'Subscription activated after successful payment',
+          worker,
+          payment: {
+            transactionId: paymentResult.transactionId,
+            amount: paymentResult.amount,
+            timestamp: paymentResult.timestamp
+          }
+        });
+      } else {
+        return res.status(400).json({ error: 'Payment failed' });
+      }
+    }
+
+    // If no req/res (background task to check all subscriptions)
+    const workers = await Worker.find({ subscriptionStatus: 'active' });
+    for (const worker of workers) {
+      if (worker.subscriptionEndDate && currentDate > worker.subscriptionEndDate) {
+        worker.subscriptionStatus = 'inactive';
+        await worker.save();
+        console.log(`Subscription expired for worker: ${worker.email}`);
+      }
+    }
+    res.json({message:'Subscription status check completed'});
+  } catch (error) {
+    if (res) {
+      return res.status(400).json({ message: error.message });
+    }
+    console.error('Error managing subscriptions:', error.message);
   }
 };

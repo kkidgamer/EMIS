@@ -30,6 +30,11 @@ exports.createBooking = async (req, res) => {
     if (worker.email === currentClient.email) {
       return res.status(403).json({ message: "Cannot book service to this account" });
     }
+    // check if booking times are valid and in the future
+    const now = new Date();
+    if (new Date(startTime) < now || new Date(endTime) <= new Date(startTime)) {
+      return res.status(400).json({ message: 'Invalid booking times' });
+    }
 
     // Calculate total amount based on service price
     const start = new Date(startTime);
@@ -115,10 +120,16 @@ exports.getAllBookings = async (req, res) => {
     let bookings;
 
     // Admins can see all bookings, clients/workers see only their own
+
     if (user.role === 'admin') {
       bookings = await Booking.find()
         .populate('serviceId', 'title category price')
+        // Get client and worker details from Client and Worker collections
+        ```
+        // need to access client schema to get client details
+        
         .populate('clientId', 'name email')
+        ```
         .populate('workerId', 'name email');
     } else if (user.role === 'client') {
       bookings = await Booking.find({ clientId: req.user.userId })

@@ -1,6 +1,7 @@
 // import jwt from 'jsonwebtoken';
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET 
+const JWT_SECRET = process.env.JWT_SECRET
+const { Worker } = require('../model/model');
 
 const auth=(req,res,next)=>{
     //extract the authorization header
@@ -39,4 +40,24 @@ const authorizeRoles = (...allowedRoles) => {
     }
 }
 
-module.exports = {auth, authorizeRoles}
+
+
+
+// Middleware to check subscription status
+const checkSubscriptionStatus = async (req, res, next) => {
+  try {
+    const workerId = req.user.worker; // Assumes req.user is set by auth middleware
+    const worker = await Worker.findById(workerId);
+    if (!worker) {
+      return res.status(404).json({ error: 'Worker not found' });
+    }
+    if (worker.subscriptionStatus !== 'active' || new Date() > worker.subscriptionEndDate) {
+      return res.status(403).json({ error: 'Active subscription required' });
+    }
+    next();
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {auth, authorizeRoles, checkSubscriptionStatus};

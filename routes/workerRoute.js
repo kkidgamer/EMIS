@@ -6,6 +6,7 @@ const { auth, authorizeRoles } = require('../middleware/auth');
 router.post('/', workerController.createWorker);
 router.get('/:id', auth, authorizeRoles('admin'), workerController.getWorkerById);
 router.get('/', auth, authorizeRoles('admin'), workerController.getAllWorkers);
+router.put('/sub/:id', auth, authorizeRoles('admin'), workerController.manageSubscription);
 router.put('/:id', auth, authorizeRoles('admin'), workerController.updateWorker);
 router.delete('/:id', auth, authorizeRoles('admin'), workerController.deleteWorker);
 
