@@ -9,11 +9,11 @@ exports.createClient = async (req, res) => {
     const userEmail= `${role.toLowerCase().trim()}.${email.toLowerCase().trim()}`
     const existingUser= await User.findOne({email:userEmail})
     if (existingUser){
-      return res.status(400).json( {message:"User already exists"})
+      return res.json( {message:"User already exists"})
     }
     const existClient= await Client.findOne({email})
     if (existClient){
-      return res.status(400).json({message:"Client already exists"})
+      return res.json({message:"Client already exists"})
     }
     const client = new Client({ name, email, phone, address });
     await client.save();
@@ -25,7 +25,7 @@ exports.createClient = async (req, res) => {
     res.status(201).json(client);
 
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -43,7 +43,7 @@ exports.getAllClients = async (req, res) => {
 exports.getClientById = async (req, res) => {
   try {
     const client = await Client.findById(req.params.id);
-    if (!client) return res.status(404).json({ error: 'Client not found' });
+    if (!client) return res.json({ error: 'Client not found' });
     res.json(client);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -55,7 +55,7 @@ exports.updateClient = async (req, res) => {
   try {
     const updates = req.body;
     const client = await Client.findByIdAndUpdate(req.params.id, updates, { new: true });
-    if (!client) return res.status(404).json({ error: 'Client not found' });
+    if (!client) return res.json({ error: 'Client not found' });
     res.json(client);
     // update corresponding user
     const user = await User.findOneAndUpdate(
@@ -65,7 +65,7 @@ exports.updateClient = async (req, res) => {
     );
     
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -73,12 +73,12 @@ exports.updateClient = async (req, res) => {
 exports.deleteClient = async (req, res) => {
   try {
     const client = await Client.findByIdAndDelete(req.params.id);
-    if (!client) return res.status(404).json({ error: 'Client not found' });
+    if (!client) return res.json({ error: 'Client not found' });
     res.json({ message: 'Client deleted' });
     // delete corresponding user
     const deleteUser = await User.findOneAndDelete({ client: req.params.id });
     if (!deleteUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.json({ message: 'User not found' });
     }
     res.json({ message: 'User deleted' });
     
