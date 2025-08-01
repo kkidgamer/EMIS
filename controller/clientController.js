@@ -22,7 +22,7 @@ exports.createClient = async (req, res) => {
     const hashedPassword= await bcrypt.hash(password,12)
     const user= new User({name,email:userEmail,password:hashedPassword,role,client:client._id})
     await user.save()
-    res.status(201).json(client);
+    res.status(201).json({client});
 
   } catch (error) {
     res.status(500).json({ error: error.message });
