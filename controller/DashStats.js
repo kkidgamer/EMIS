@@ -1,4 +1,4 @@
-const { User, Client, Worker, Service, Booking, Message, AdminAction, Payment, Review, Category } = require("../model/schooldb");
+const { User, Client, Worker, Service, Booking, Message, AdminAction, Payment, Review, Category } = require("../model/model");
 
 // Admin Dashboard Data
 exports.getAdminDashboardData = async (req, res) => {
