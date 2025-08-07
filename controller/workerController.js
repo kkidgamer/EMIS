@@ -21,7 +21,7 @@ exports.createWorker = async (req, res) => {
         const worker = new Worker({ name, email, phone, profession, nationalId, experience, address });
     await worker.save();
     
-    // hash password
+    // hash passwordhttps://github.com/kkidgamer/EMIS
     const hashedPassword = await bcrypt.hash(password, 12);
     // Create a new user associated with the worker
     const user = new User({ name, email: userEmail, password: hashedPassword, role, worker: worker._id });
@@ -67,6 +67,7 @@ exports.updateWorker = async (req, res) => {
     
     const worker = await Worker.findByIdAndUpdate(req.params.id, updates, { new: true });
     if (!worker) return res.status(404).json({ error: 'Worker not found' });
+    const user = await User.findOneAndDelete({worker:req.params.id},updates,{new:true})
     res.json(worker);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -77,7 +78,9 @@ exports.updateWorker = async (req, res) => {
 exports.deleteWorker = async (req, res) => {
   try {
     const worker = await Worker.findByIdAndDelete(req.params.id);
-    if (!worker) return res.status(404).json({ error: 'Worker not found' });
+    if (!worker) return res.status(404).json({ message: 'Worker not found' });
+    const user = await User.findOneAndDelete({worker:req.params.id})
+    if (!user) return res.json({message:"User not found"})
     res.json({ message: 'Worker deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -8,8 +8,11 @@ exports.createService = async (req, res) => {
 
     // Verify user is a worker
     const user = await User.findById(userId);
-    if (!user || user.role !== 'worker') {
+    if ( user.role !== 'worker') {
       return res.status(403).json({ message: 'Only workers can create services' });
+    }
+    if(!user){
+      return res.json({message:"User not found"})
     }
 
     const service = new Service({
