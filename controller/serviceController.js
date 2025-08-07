@@ -28,7 +28,7 @@ exports.createService = async (req, res) => {
     await service.save();
     res.status(201).json(service);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 

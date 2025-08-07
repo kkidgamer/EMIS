@@ -9,6 +9,7 @@ const userSchema = new Schema({
     isActive: { type: Boolean, default: true },
     last_active: { type: Date, default: null },
     role: { type: String, enum: ['admin', 'client', 'worker'], required: true },
+    status: {type: String,enum:['approved','banned','under review']},
     client: { type: Schema.Types.ObjectId, ref: 'Client', default: null },
     worker: { type: Schema.Types.ObjectId, ref: 'Worker', default: null },
 }, { timestamps: true });
@@ -160,12 +161,14 @@ const AdminActionSchema = new Schema({
     required: true,
   },
   details: {
-    type: Map,
-    of: String, 
+    type: String,
   },
 }, {
   timestamps: true,
 });
+
+
+
 
 // payment schema
 // const PaymentSchema = new Schema({
