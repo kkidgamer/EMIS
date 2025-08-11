@@ -5,45 +5,63 @@ const bcrypt = require('bcrypt');
 exports.createWorker = async (req, res) => {
   try {
     const { name, email, phone, profession, nationalId, experience, address, role, password } = req.body;
+
+    // Normalize email
     const userEmail = `${role.toLowerCase().trim()}.${email.toLowerCase().trim()}`;
 
-    // Check for existing user
-    if (await User.findOne({ email: userEmail })) {
+    // Check for duplicates in User
+    const existingUser = await User.findOne({ email: userEmail });
+    if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Check for existing worker
-    if (await Worker.findOne({ email })) {
+    // Check for duplicates in Worker
+    const existingWorker = await Worker.findOne({ email });
+    if (existingWorker) {
       return res.status(400).json({ message: "Worker already exists" });
     }
 
-    // Check for existing national ID
-    if (await Worker.findOne({ nationalId })) {
+    // Check for duplicate national ID
+    const existingNationalId = await Worker.findOne({ nationalId });
+    if (existingNationalId) {
       return res.status(400).json({ message: "National ID already exists" });
     }
 
-    // Create worker first
-    const worker = new Worker({ name, email, phone, profession, nationalId, experience, address });
+    // Create Worker first
+    const worker = new Worker({
+      name,
+      email,
+      phone,
+      profession,
+      nationalId,
+      experience,
+      address
+    });
     await worker.save();
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user linked to worker
+    // Create User linked to Worker
     const user = new User({
       name,
       email: userEmail,
       password: hashedPassword,
       role,
-      worker: worker._id
+      worker: worker._id // Link Worker
     });
     await user.save();
 
-    // Link the worker back to the user
-    worker.user = user._id; // assuming you add a `user` field in Worker schema
+    // Update Worker with User ID (optional, if you want bidirectional link)
+    worker.user = user._id;
     await worker.save();
 
-    res.status(201).json({ worker, user });
+    res.status(201).json({
+      message: "Worker and user created successfully",
+      worker,
+      user
+    });
+
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
