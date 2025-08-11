@@ -18,14 +18,14 @@ exports.createService = async (req, res) => {
       return res.status(404).json({ error: "Worker profile not found for this user" });
     }
 
-    // Create service linked to worker
+    // Create service linked to worker (using workerId as per schema)
     const service = new Service({
       title,
       description,
       category,
       price,
       duration,
-      worker: user.worker._id // Link worker
+      workerId: user.worker._id // Link worker using workerId field
     });
 
     await service.save();
@@ -40,7 +40,6 @@ exports.createService = async (req, res) => {
   }
 };
 
-
 // Get all services
 exports.getAllServices = async (req, res) => {
   try {
@@ -51,21 +50,23 @@ exports.getAllServices = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 // Get services by worker ID
 exports.getServicesByWorker = async (req, res) => {
   try {
-    const user =  await User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId);
     if (!user || user.role !== 'worker') {
       return res.status(403).json({ message: 'Only workers can view their services' });
     }
-    const services = await Service.find({ workerId:user.worker }).populate('workerId', 'name email');
+    
+    // Use 'workerId' field as per schema
+    const services = await Service.find({ workerId: user.worker }).populate('workerId', 'name email');
     if (!services.length) return res.status(404).json({ error: 'No services found for this worker' });
     res.status(200).json(services);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // Get service by ID
 exports.getServiceById = async (req, res) => {
@@ -80,19 +81,19 @@ exports.getServiceById = async (req, res) => {
 
 exports.updateService = async (req, res) => {
   try {
-    const workerId = req.user.userId;
+    const userId = req.user.userId;
     const updates = req.body;
 
-    const worker = await User.findById(workerId);
-    if (!worker || worker.role !== 'worker') {
+    const user = await User.findById(userId);
+    if (!user || user.role !== 'worker') {
       return res.status(403).json({ message: 'Only workers can update services' });
     }
 
     const service = await Service.findById(req.params.id);
     if (!service) return res.status(404).json({ error: 'Service not found' });
 
-    // Ensure the worker owns the service
-    if (service.workerId.toString() !== worker._id.toString()) {
+    // Use 'workerId' field and compare with user.worker
+    if (service.workerId.toString() !== user.worker.toString()) {
       return res.status(403).json({ message: 'Unauthorized to update this service' });
     }
 
@@ -107,21 +108,24 @@ exports.updateService = async (req, res) => {
 exports.deleteService = async (req, res) => {
   try {
     const userId = req.user.userId; // From JWT
-    const existUser = await User.findById(userId)
-    if (!existUser){
-      return res.status(404).json({message:"User not found"})
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-    const existWorker = await Worker.findById(existUser.worker)
-    if (!existWorker){
-      return res.status(404).json({message:"Worker not found"})
+    
+    if (user.role !== 'worker') {
+      return res.status(403).json({ message: "Only workers can delete services" });
     }
+
     const service = await Service.findById(req.params.id);
     if (!service) return res.status(404).json({ error: 'Service not found' });
-    console.log(service.workerId)
-    console.log(existWorker._id)
+    
+    console.log('Service workerId:', service.workerId);
+    console.log('User worker:', user.worker);
 
-    // Ensure only the worker who created the service can delete it
-    if (service.workerId.toString() !== existWorker._id.toString()) {
+    // Use 'workerId' field as per schema
+    if (service.workerId.toString() !== user.worker.toString()) {
       return res.status(403).json({ message: 'Unauthorized to delete this service' });
     }
 
@@ -131,4 +135,3 @@ exports.deleteService = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
