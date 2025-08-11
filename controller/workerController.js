@@ -63,7 +63,7 @@ exports.createWorker = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -74,7 +74,7 @@ exports.getAllWorkers = async (req, res) => {
     const workers = await Worker.find();
     res.json(workers);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -85,7 +85,7 @@ exports.getWorkerById = async (req, res) => {
     if (!worker) return res.status(404).json({ error: 'Worker not found' });
     res.json(worker);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -103,7 +103,7 @@ exports.updateWorker = async (req, res) => {
     const user = await User.findOneAndDelete({worker:req.params.id},updates,{new:true})
     res.json(worker);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -116,7 +116,7 @@ exports.deleteWorker = async (req, res) => {
     if (!user) return res.json({message:"User not found"})
     res.json({ message: 'Worker deleted' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -140,7 +140,7 @@ const simulatePayment = async (workerId, amount) => {
   } catch (error) {
     return {
       status: 'failed',
-      error: error.message,
+      message: error.message,
       workerId,
       timestamp: new Date()
     };
@@ -159,7 +159,7 @@ exports.manageSubscription = async (req, res) => {
     if (req && res) {
       const workerId = req.params.id;
       const worker = await Worker.findById(workerId);
-      if (!worker) return res.status(404).json({ error: 'Worker not found' });
+      if (!worker) return res.status(404).json({ message: 'Worker subscription off' });
 
       // // Check if user is authenticated and authorized
       // if (!req.user || req.user.userId.toString() !== workerId) {
@@ -190,7 +190,7 @@ exports.manageSubscription = async (req, res) => {
           }
         });
       } else {
-        return res.status(400).json({ error: 'Payment failed' });
+        return res.status(400).json({ message: 'Payment failed' });
       }
     }
 
