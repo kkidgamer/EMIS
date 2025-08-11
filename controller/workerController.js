@@ -4,31 +4,46 @@ const bcrypt = require('bcrypt');
 // Create a new worker
 exports.createWorker = async (req, res) => {
   try {
-    const { name, email, phone, profession, nationalId, experience, address,role,password } = req.body;
+    const { name, email, phone, profession, nationalId, experience, address, role, password } = req.body;
     const userEmail = `${role.toLowerCase().trim()}.${email.toLowerCase().trim()}`;
-    const existingUser = await User.findOne({ email: userEmail });
-    if (existingUser) {
+
+    // Check for existing user
+    if (await User.findOne({ email: userEmail })) {
       return res.status(400).json({ message: "User already exists" });
     }
-    const existingWorker = await Worker.findOne({ email });
-    if (existingWorker) {
+
+    // Check for existing worker
+    if (await Worker.findOne({ email })) {
       return res.status(400).json({ message: "Worker already exists" });
     }
-    const existingNationalId = await Worker.findOne({ nationalId });
-    if (existingNationalId) {
+
+    // Check for existing national ID
+    if (await Worker.findOne({ nationalId })) {
       return res.status(400).json({ message: "National ID already exists" });
     }
-        const worker = new Worker({ name, email, phone, profession, nationalId, experience, address });
+
+    // Create worker first
+    const worker = new Worker({ name, email, phone, profession, nationalId, experience, address });
     await worker.save();
-    
-    // hash passwordhttps://github.com/kkidgamer/EMIS
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
-    // Create a new user associated with the worker
-    const user = new User({ name, email: userEmail, password: hashedPassword, role, worker: worker._id });
+
+    // Create user linked to worker
+    const user = new User({
+      name,
+      email: userEmail,
+      password: hashedPassword,
+      role,
+      worker: worker._id
+    });
     await user.save();
 
+    // Link the worker back to the user
+    worker.user = user._id; // assuming you add a `user` field in Worker schema
+    await worker.save();
 
-    res.status(201).json(worker);
+    res.status(201).json({ worker, user });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
