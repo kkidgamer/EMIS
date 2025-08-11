@@ -1,32 +1,42 @@
 const { Service, User, Worker } = require('../model/model');
 
+// Create a new service
 exports.createService = async (req, res) => {
   try {
     const { title, description, category, price, duration } = req.body;
-    const userId = req.user.userId; // From JWT middleware
 
-    const user = await User.findById(userId);
+    // Get logged-in user's data
+    const userId = req.user.userId; 
+
+    // Find user and populate worker
+    const user = await User.findById(userId).populate("worker");
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    if (user.role !== 'worker') {
-      return res.status(403).json({ message: 'Only workers can create services' });
+      return res.status(404).json({ error: "User not found" });
     }
 
+    if (!user.worker) {
+      return res.status(404).json({ error: "Worker profile not found for this user" });
+    }
+
+    // Create service linked to worker
     const service = new Service({
-      workerId: user._id, // Store the user's ID
       title,
       description,
       category,
       price,
       duration,
-      status: "active"
+      worker: user.worker._id // Link worker
     });
 
     await service.save();
-    res.status(201).json(service);
+
+    res.status(201).json({
+      message: "Service created successfully",
+      service
+    });
+
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
