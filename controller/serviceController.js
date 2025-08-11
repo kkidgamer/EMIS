@@ -1,30 +1,26 @@
 const { Service, User, Worker } = require('../model/model');
 
-// Create a new service
 exports.createService = async (req, res) => {
   try {
     const { title, description, category, price, duration } = req.body;
     const userId = req.user.userId; // From JWT middleware
-    console.log(userId)
 
-    // Verify user is a worker
     const user = await User.findById(userId);
-    if ( user.role !== 'worker') {
-      return res.status(403).json({ message: 'Only workers can create services' });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-    console.log(user)
-    if(!user){
-      return res.json({message:"User not found"})
+    if (user.role !== 'worker') {
+      return res.status(403).json({ message: 'Only workers can create services' });
     }
 
     const service = new Service({
-      workerId: user.worker,
+      workerId: user._id, // Store the user's ID
       title,
       description,
       category,
       price,
       duration,
-      status:"active"
+      status: "active"
     });
 
     await service.save();
@@ -33,6 +29,7 @@ exports.createService = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
 
 // Get all services
 exports.getAllServices = async (req, res) => {
@@ -71,11 +68,11 @@ exports.getServiceById = async (req, res) => {
   }
 };
 
-// Update service
 exports.updateService = async (req, res) => {
   try {
-    const workerId = req.user.userId; // From JWT
+    const workerId = req.user.userId;
     const updates = req.body;
+
     const worker = await User.findById(workerId);
     if (!worker || worker.role !== 'worker') {
       return res.status(403).json({ message: 'Only workers can update services' });
@@ -84,8 +81,8 @@ exports.updateService = async (req, res) => {
     const service = await Service.findById(req.params.id);
     if (!service) return res.status(404).json({ error: 'Service not found' });
 
-    // Ensure only the worker who created the service can update it
-    if (service.workerId.toString() !== worker.worker.toString()) {
+    // Ensure the worker owns the service
+    if (service.workerId.toString() !== worker._id.toString()) {
       return res.status(403).json({ message: 'Unauthorized to update this service' });
     }
 
