@@ -5,12 +5,14 @@ exports.createService = async (req, res) => {
   try {
     const { title, description, category, price, duration } = req.body;
     const userId = req.user.userId; // From JWT middleware
+    console.log(userId)
 
     // Verify user is a worker
     const user = await User.findById(userId);
     if ( user.role !== 'worker') {
       return res.status(403).json({ message: 'Only workers can create services' });
     }
+    console.log(user)
     if(!user){
       return res.json({message:"User not found"})
     }
@@ -37,6 +39,7 @@ exports.getAllServices = async (req, res) => {
   try {
     const services = await Service.find({ status: 'active' }).populate('workerId', 'name email');
     res.status(200).json(services);
+    console.log(services)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
