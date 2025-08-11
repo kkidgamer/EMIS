@@ -31,6 +31,7 @@ const workerSchema = new Schema({
     nationalId: { type: String, required: true, unique: true },
     experience: { type: String },
     address: { type: String },
+    user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     rating: { type: Number, default: 0 },
     subscriptionStatus: { type: String, enum: ['active', 'inactive'], default: 'inactive' },
     subscriptionStartDate: { type: Date },
