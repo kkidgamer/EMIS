@@ -49,7 +49,7 @@ const checkSubscriptionStatus = async (req, res, next) => {
     const workerId = req.user.worker; // Assumes req.user is set by auth middleware
     const worker = await Worker.findById(workerId);
     if (!worker) {
-      return res.status(404).json({ error: 'Worker not found' });
+      return res.status(404).json({ error: 'Worker has not found' });
     }
     if (worker.subscriptionStatus !== 'active' || new Date() > worker.subscriptionEndDate) {
       return res.status(403).json({ error: 'Active subscription required' });
