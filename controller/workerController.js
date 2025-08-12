@@ -48,12 +48,12 @@ exports.createWorker = async (req, res) => {
       email: userEmail,
       password: hashedPassword,
       role,
-      worker: worker._id // Link Worker
+      worker: worker._id.toString() // Link Worker
     });
     await user.save();
 
     // Update Worker with User ID (optional, if you want bidirectional link)
-    worker.user = user._id;
+    worker.user = user._id.toString();
     await worker.save();
 
     res.status(201).json({
