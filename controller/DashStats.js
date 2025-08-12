@@ -113,7 +113,8 @@ exports.getClientDashboardData = async (req, res) => {
 exports.getWorkerDashboardData = async (req, res) => {
     try {
         const userId = req.user._id; // Assuming user ID is available from authentication middleware
-
+        console.log(req.user._id)
+        console.log(req.user.id)
         // Parallel queries for worker-specific data
         const [
             workerServices,
