@@ -8,7 +8,7 @@ const { auth, authorizeRoles, checkSubscriptionStatus } = require('../middleware
 router.post(
   '/',
   auth,
-  checkSubscriptionStatus,
+
   authorizeRoles('worker'),
   serviceController.createService
 );
@@ -17,7 +17,7 @@ router.post(
 router.get(
   '/worker',
   auth,
-  checkSubscriptionStatus,
+
   authorizeRoles('worker'),
   serviceController.getServicesByWorker
 );
@@ -32,7 +32,7 @@ router.get('/', auth, serviceController.getAllServices);
 router.put(
   '/:id',
   auth,
-  checkSubscriptionStatus,
+
   authorizeRoles('worker'),
   serviceController.updateService
 );
@@ -41,7 +41,7 @@ router.put(
 router.delete(
   '/:id',
   auth,
-  checkSubscriptionStatus,
+
   authorizeRoles('admin', 'worker'),
   serviceController.deleteService
 );
