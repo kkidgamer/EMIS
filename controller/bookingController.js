@@ -119,17 +119,10 @@ exports.getAllBookings = async (req, res) => {
     const user = await User.findById(req.user.userId);
     let bookings;
 
-    // Admins can see all bookings, clients/workers see only their own
-
     if (user.role === 'admin') {
       bookings = await Booking.find()
         .populate('serviceId', 'title category price')
-        // Get client and worker details from Client and Worker collections
-        ```
-        // need to access client schema to get client details
-        
-        .populate('clientId', 'name email')
-        ```
+        .populate('clientId', 'name email') // Ensure User schema has name/email
         .populate('workerId', 'name email');
     } else if (user.role === 'client') {
       bookings = await Booking.find({ clientId: req.user.userId })
@@ -145,31 +138,10 @@ exports.getAllBookings = async (req, res) => {
 
     res.status(200).json(bookings);
   } catch (error) {
+    console.error('Get All Bookings Error:', error); // Debug log
     res.status(500).json({ error: error.message });
   }
 };
-
-// Get booking by ID
-exports.getBookingById = async (req, res) => {
-  try {
-    const booking = await Booking.findById(req.params.id)
-      .populate('serviceId', 'title category price')
-      .populate('clientId', 'name email')
-      .populate('workerId', 'name email');
-    if (!booking) return res.status(404).json({ error: 'Booking not found' });
-
-    // Ensure user is part of the booking or an admin
-    const user = await User.findById(req.user.userId);
-    if (user.role !== 'admin' && booking.clientId.toString() !== req.user.userId && booking.workerId.toString() !== user.worker.toString()) {
-      return res.status(403).json({ message: 'Unauthorized to view this booking' });
-    }
-
-    res.status(200).json(booking);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // Update booking (e.g., change status or reschedule)
 exports.updateBooking = async (req, res) => {
   try {
