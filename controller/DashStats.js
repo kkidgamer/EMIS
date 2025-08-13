@@ -112,10 +112,11 @@ exports.getClientDashboardData = async (req, res) => {
 // Worker Dashboard Data
 exports.getWorkerDashboardData = async (req, res) => {
     try {
-        const userId = req.user._id; // Assuming user ID is available from authentication middleware
+        const userId = req.user.userId; // Assuming user ID is available from authentication middleware
         console.log(req.user._id)
         console.log(req.user.id)
         console.log(req.user.userId)
+        const user = await User.findById(req.user.userId)
         // Parallel queries for worker-specific data
         const [
             workerServices,
@@ -125,9 +126,9 @@ exports.getWorkerDashboardData = async (req, res) => {
             averageRating,
             unreadMessages
         ] = await Promise.all([
-            Service.countDocuments({ workerId: userId, status: 'active' }),
-            Booking.countDocuments({ workerId: userId, status: { $in: ['pending', 'confirmed', 'ongoing'] } }),
-            Booking.countDocuments({ workerId: userId, status: 'completed' }),
+            Service.countDocuments({ workerId: user.worker, status: 'active' }),
+            Booking.countDocuments({ workerId: user.worker, status: { $in: ['pending', 'confirmed', 'ongoing'] } }),
+            Booking.countDocuments({ workerId: user.worker, status: 'completed' }),
             Payment.aggregate([
                 { $match: { userId, status: 'completed' } },
                 { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -140,7 +141,7 @@ exports.getWorkerDashboardData = async (req, res) => {
         ]);
 
         // Recent worker activities
-        const recentBookings = await Booking.find({ workerId: userId })
+        const recentBookings = await Booking.find({ workerId: user.worker })
             .sort({ createdAt: -1 })
             .limit(5)
             .populate('serviceId', 'title price')
