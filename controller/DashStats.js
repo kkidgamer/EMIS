@@ -63,7 +63,7 @@ exports.getAdminDashboardData = async (req, res) => {
 // Client Dashboard Data
 exports.getClientDashboardData = async (req, res) => {
     try {
-        const userId = req.user._id; // Assuming user ID is available from authentication middleware
+        const userId = req.user.userId; // Assuming user ID is available from authentication middleware
 
         // Parallel queries for client-specific data
         const [
