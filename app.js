@@ -38,6 +38,10 @@ app.use('/api/booking', bookingRoute)
 const dashController = require ('./routes/dashRoute')
 app.use("/api/dash", dashController)
 
+// message routes
+const messageController = require('./routes/messagesRoute')
+app.use("/api/messages", messageController)
+
 // connect to the database
 mongoose.connect(process.env.MONGO_URI)
 .then(()=> console.log('Connected to MongoDB'))
