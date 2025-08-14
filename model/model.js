@@ -9,7 +9,7 @@ const userSchema = new Schema({
     isActive: { type: Boolean, default: true },
     last_active: { type: Date, default: null },
     role: { type: String, enum: ['admin', 'client', 'worker'], required: true },
-    status: {type: String,enum:['approved','banned','under review']},
+    status: {type: String,enum:['approved','banned','under review','suspended'],default: 'under review'},
     client: { type: Schema.Types.ObjectId, ref: 'Client', default: null },
     worker: { type: Schema.Types.ObjectId, ref: 'Worker', default: null },
 }, { timestamps: true });
