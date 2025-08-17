@@ -22,9 +22,6 @@ router.get('/between/:otherUserId', auth, authorizeRoles('client', 'worker', 'ad
 // Mark a message as read
 router.put('/read/:id', auth, messageController.markMessageAsRead)
 
-// Get unread message count
-router.get('/unread/count', auth, authorizeRoles('client', 'worker', 'admin'), messageController.getUnreadMessageCount)
-
 
 
 // Delete a message (sender or admin only)
