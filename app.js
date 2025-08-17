@@ -39,13 +39,8 @@ const dashController = require ('./routes/dashRoute')
 app.use("/api/dash", dashController)
 
 // message routes
-<<<<<<< HEAD
-const messageController = require('./routes/messagesRoute')
-app.use("/api/messages", messageController)
-=======
 const messageController = require ('./routes/messagesRoute')
 app.use("/api/message", messageController)
->>>>>>> 81b167ab122648e14390c938af4a2afe3421c23d
 
 // connect to the database
 mongoose.connect(process.env.MONGO_URI)
