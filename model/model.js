@@ -3,13 +3,12 @@ const Schema = mongoose.Schema;
 
 // Define the schema
 const userSchema = new Schema({
-    name: { type: String },
+    name: { type: String,required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    isActive: { type: Boolean, default: true },
     last_active: { type: Date, default: null },
     role: { type: String, enum: ['admin', 'client', 'worker'], required: true },
-    status: {type: String,enum:['approved','banned','under review','suspended'],default: 'under review'},
+    status: {type: String,enum:['approved','banned','under review','suspended',''],default: 'under review'},
     client: { type: Schema.Types.ObjectId, ref: 'Client', default: null },
     worker: { type: Schema.Types.ObjectId, ref: 'Worker', default: null },
 }, { timestamps: true });
@@ -29,11 +28,11 @@ const workerSchema = new Schema({
     phone: { type: String, required: true },
     profession: { type: String, required: true },
     nationalId: { type: String, required: true, unique: true },
-    experience: { type: String },
+    experience: { type: Number },
     address: { type: String },
     user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     rating: { type: Number, default: 0 },
-    subscriptionStatus: { type: String, enum: ['active', 'inactive'], default: 'inactive' },
+    subscriptionStatus: { type: String, enum: ['active', 'inactive'], default: 'active' },
     subscriptionStartDate: { type: Date },
     subscriptionEndDate: { type: Date }
 }, { timestamps: true });
@@ -42,7 +41,7 @@ const workerSchema = new Schema({
 const ServiceSchema = new Schema({
   workerId: {
     type: Schema.Types.ObjectId,
-    ref: 'Worker',
+    ref: 'User',
     required: true,
   },
   title: {
@@ -69,7 +68,7 @@ const ServiceSchema = new Schema({
   status: {
     type: String,
     enum: [ 'active', 'inactive'],
-    default: 'inactive',
+    default: 'active',
   },
 }, {
   timestamps: true,
@@ -134,6 +133,8 @@ const MessageSchema = new Schema({
   },
   content: {
     type: String,
+    trim: true,
+    maxlength: [500, 'Comment cannot exceed 500 characters'],
     required: true,
   },
   isRead: {
@@ -154,7 +155,7 @@ const AdminActionSchema = new Schema({
   },
   actionType: {
     type: String,
-    enum: ['approve_profile', 'reject_profile', 'ban_user', 'resolve_dispute', 'edit_service'],
+    enum: ['approve_profile', 'suspend_profile', 'ban_user', 'resolve_dispute', 'edit_service'],
     required: true,
   },
   targetId: {
@@ -256,6 +257,9 @@ const ReviewSchema = new Schema({
   },
   comment: {
     type: String,
+    trim: true,
+    maxlength: [500, 'Comment cannot exceed 500 characters'],
+    required: true,
   },
 }, {
   timestamps: true,

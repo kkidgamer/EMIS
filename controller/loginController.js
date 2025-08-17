@@ -30,6 +30,7 @@ exports.registerAdmin = async (req, res) => {
             isActive: true,
             worker: null,
             client: null,
+            status: '',
             role: 'admin',
             last_active: null // Initialize last_active
         });

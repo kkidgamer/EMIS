@@ -4,8 +4,10 @@ const { Review } = require('../model/model');
 // Create a new review
 exports.createReview = async (req, res) => {
   try {
-    const { bookingId, reviewerId, reviewedId, rating, comment } = req.body;
-    const review = new Review({ bookingId, reviewerId, reviewedId, rating, comment });
+    const { bookingId, rating, comment } = req.body;
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    const review = new Review({ bookingId, reviewerId:req.user.userId, reviewedId:booking.workerId, rating, comment });
     await review.save();
     res.status(201).json(review);
   } catch (error) {

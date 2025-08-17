@@ -25,7 +25,7 @@ exports.createService = async (req, res) => {
       category,
       price,
       duration,
-      workerId: user.worker._id // Link worker using workerId field
+      workerId: userId // Link worker using workerId field
     });
 
     await service.save();
@@ -58,9 +58,9 @@ exports.getServicesByWorker = async (req, res) => {
     if (!user || user.role !== 'worker') {
       return res.status(403).json({ message: 'Only workers can view their services' });
     }
-    
+    const userId = req.user.userId; 
     // Use 'workerId' field as per schema
-    const services = await Service.find({ workerId: user.worker }).populate('workerId', 'name email');
+    const services = await Service.find({ workerId: userId }).populate('workerId', 'name email');
     if (!services.length) return res.status(404).json({ error: 'No services found for this worker' });
     res.status(200).json(services);
   } catch (error) {
@@ -93,7 +93,7 @@ exports.updateService = async (req, res) => {
     if (!service) return res.status(404).json({ error: 'Service not found' });
 
     // Use 'workerId' field and compare with user.worker
-    if (service.workerId.toString() !== user.worker.toString()) {
+    if (service.workerId.toString() !== userId.toString()) {
       return res.status(403).json({ message: 'Unauthorized to update this service' });
     }
 
@@ -114,8 +114,8 @@ exports.deleteService = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     
-    if (user.role !== 'worker') {
-      return res.status(403).json({ message: "Only workers can delete services" });
+    if (user.role == 'client') {
+      return res.status(403).json({ message: "Clients cannot delete services" });
     }
 
     const service = await Service.findById(req.params.id);
@@ -125,7 +125,7 @@ exports.deleteService = async (req, res) => {
     console.log('User worker:', user.worker);
 
     // Use 'workerId' field as per schema
-    if (service.workerId.toString() !== user.worker.toString()) {
+    if (service.workerId.toString() !== userId.toString()) {
       return res.status(403).json({ message: 'Unauthorized to delete this service' });
     }
 

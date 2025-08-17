@@ -19,7 +19,7 @@ exports.createBooking = async (req, res) => {
     }
 
     // Make sure client and worker are not the same person
-    const worker = await Worker.findById(service.workerId);
+    const worker = await User.findById(service.workerId);
     if (!worker) {
       return res.status(404).json({ message: "Worker does not exist" });
     }
@@ -27,7 +27,7 @@ exports.createBooking = async (req, res) => {
     if (!currentClient) {
       return res.status(404).json({ message: "Client not found" });
     }
-    if (worker.email === currentClient.email) {
+    if (worker.worker.email === currentClient.email) {
       return res.status(403).json({ message: "Cannot book service to this account" });
     }
     // check if booking times are valid and in the future
@@ -70,7 +70,7 @@ exports.confirmBooking = async (req, res) => {
 
     // Only workers can confirm bookings
     const user = await User.findById(req.user.userId);
-    if (user.role !== 'worker' || booking.workerId.toString() !== user.worker.toString()) {
+    if (user.role !== 'worker' || booking.workerId.toString() !== req.user.userId.toString()) {
       return res.status(403).json({ message: 'Only the assigned worker can confirm this booking' });
     }
 
@@ -129,7 +129,7 @@ exports.getAllBookings = async (req, res) => {
         .populate('serviceId', 'title category price')
         .populate('workerId', 'name email');
     } else if (user.role === 'worker') {
-      bookings = await Booking.find({ workerId: user.worker })
+      bookings = await Booking.find({ workerId: req.user.userId })
         .populate('serviceId', 'title category price')
         .populate('clientId', 'name email');
     } else {
@@ -154,7 +154,7 @@ exports.updateBooking = async (req, res) => {
     if (user.role === 'client' && booking.clientId.toString() !== req.user.userId) {
       return res.status(403).json({ message: 'Unauthorized to update this booking' });
     }
-    if (user.role === 'worker' && booking.workerId.toString() !== user.worker.toString()) {
+    if (user.role === 'worker' && booking.workerId.toString() !== req.user.userId.toString()) {
       return res.status(403).json({ message: 'Unauthorized to update this booking' });
     }
 
@@ -198,7 +198,7 @@ exports.cancelBooking = async (req, res) => {
 
     // Authorization: clients/workers can cancel pending bookings, admins can cancel any
     const user = await User.findById(req.user.userId);
-    if (user.role !== 'admin' && booking.clientId.toString() !== req.user.userId && booking.workerId.toString() !== user.worker.toString()) {
+    if (user.role !== 'admin' && booking.clientId.toString() !== req.user.userId && booking.workerId.toString() !== req.user.userId.toString()) {
       return res.status(403).json({ message: 'Unauthorized to cancel this booking' });
     }
     if (user.role !== 'admin' && booking.status !== 'pending') {
