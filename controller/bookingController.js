@@ -9,31 +9,31 @@ exports.createBooking = async (req, res) => {
     // Verify user is a client
     const user = await User.findById(clientId);
     if (!user || user.role !== 'client') {
-      return res.status(403).json({ message: 'Only clients can create bookings' });
+      return res.json({ message: 'Only clients can create bookings' });
     }
 
     // Verify service exists and is active
     const service = await Service.findById(serviceId);
     if (!service || service.status !== 'active') {
-      return res.status(404).json({ error: 'Service not found or not active' });
+      return res.json({ error: 'Service not found or not active' });
     }
 
     // Make sure client and worker are not the same person
     const worker = await User.findById(service.workerId);
     if (!worker) {
-      return res.status(404).json({ message: "Worker does not exist" });
+      return res.json({ message: "Worker does not exist" });
     }
     const currentClient = await Client.findById(user.client);
     if (!currentClient) {
-      return res.status(404).json({ message: "Client not found" });
+      return res.json({ message: "Client not found" });
     }
     if (worker.worker.email === currentClient.email) {
-      return res.status(403).json({ message: "Cannot book service to this account" });
+      return res.json({ message: "Cannot book service to this account" });
     }
     // check if booking times are valid and in the future
     const now = new Date();
     if (new Date(startTime) < now || new Date(endTime) <= new Date(startTime)) {
-      return res.status(400).json({ message: 'Invalid booking times' });
+      return res.json({ message: 'Invalid booking times' });
     }
 
     // Calculate total amount based on service price
