@@ -62,7 +62,7 @@ exports.loginAdmin = async (req, res) => {
         // Check if the password is correct
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid Credentials... Please try again' });
+            return res.json({ message: 'Invalid Credentials... Please try again' });
         }
 
         // Update last_active timestamp
@@ -109,7 +109,7 @@ exports.getUserById = async (req, res) => {
     try {
         const user = await User.findById(id).select('-password');
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.json({ message: 'User not found' });
         }
         res.status(200).json(user);
     } catch (error) {
@@ -124,7 +124,7 @@ exports.updateUser = async (req, res) => {
         // Find user by ID
         const user = await User.findById(req.params.id);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.json({ message: 'User not found' });
         }
 
         // Update last_active timestamp
