@@ -15,7 +15,7 @@ exports.createBooking = async (req, res) => {
     // Verify service exists and is active
     const service = await Service.findById(serviceId);
     if (!service || service.status !== 'active') {
-      return res.json({ error: 'Service not found or not active' });
+      return res.json({ message: 'Service not found or not active' });
     }
 
     // Make sure client and worker are not the same person
