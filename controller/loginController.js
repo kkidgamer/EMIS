@@ -10,13 +10,13 @@ exports.registerAdmin = async (req, res) => {
     try {
         // Check if the secret key matches
         if (secretKey !== process.env.secretKey) {
-            return res.status(403).json({ message: 'Unauthorized Account Creation' });
+            return res.json({ message: 'Unauthorized Account Creation' });
         }
 
         // Check if user already exists
         const existingUser = await User.findOne({ email: prefixedEmail });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.json({ message: 'User already exists' });
         }
 
         // Hash the password
@@ -53,11 +53,11 @@ exports.loginAdmin = async (req, res) => {
         const prefixedEmail = `${prefix.trim().toLowerCase()}${email.trim().toLowerCase()}`;
         const user = await User.findOne({ email: prefixedEmail });
         if (!user) {
-            return res.status(404).json({ message: 'Invalid Credentials... Please try again' });
+            return res.json({ message: 'Invalid Credentials... Please try again' });
         }
-        if (!user.isActive) {
-            return res.status(403).json({ message: 'Account is deactivated!!!' });
-        }
+        // if (!user.isActive) {
+        //     return res.status(403).json({ message: 'Account is deactivated!!!' });
+        // }
 
         // Check if the password is correct
         const isPasswordValid = await bcrypt.compare(password, user.password);
